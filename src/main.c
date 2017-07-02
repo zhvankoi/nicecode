@@ -36,8 +36,8 @@ void processKeypress()
 
   switch(input) {
     case CTRL_KEY('q'):
-      clearTerminal();
-      moveCursorToHome();
+      termClear();
+      termCursorHome();
       exit(0);
       break;
   }
@@ -55,17 +55,17 @@ void editorDrawRows(){
 }
 
 void editorRefresh(){
-  clearTerminal();
-  moveCursorToHome();
+  termClear();
+  termCursorHome();
 
   editorDrawRows();
 
-  moveCursorToHome();
+  termCursorHome();
 }
 
 int main()
 {
-  enableRawMode();
+  termRawModeOn();
 
   while (1) 
   {

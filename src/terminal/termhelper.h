@@ -11,9 +11,9 @@
 
 #define ESC "\x1b"
 
-void enableRawMode();
-void disableRawMode();
-void clearTerminal();
-void moveCursorToHome();
+void termRawModeOn();
+void termRawModeOff();
+void termClear();
+void termCursorHome();
 
 #endif

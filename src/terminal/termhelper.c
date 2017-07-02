@@ -7,15 +7,15 @@ struct EditorConfigs {
 
 struct EditorConfigs editor_configs;
 
-void disableRawMode() {
+void termRawModeOff() {
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &editor_configs.orig_termios) == -1)
-    handleErrorAndQuit("disableRawMode: tcsetattr failed");
+    handleErrorAndQuit("termRawModeOff: tcsetattr failed");
 }
 
-void enableRawMode() {
+void termRawModeOn() {
   if (tcgetattr(STDIN_FILENO, &editor_configs.orig_termios) == -1)
-    handleErrorAndQuit("enableRawMode: tcgetattr failed");
-  atexit(disableRawMode);
+    handleErrorAndQuit("termRawModeOn: tcgetattr failed");
+  atexit(termRawModeOff);
 
   struct termios raw = editor_configs.orig_termios;
 
@@ -28,13 +28,17 @@ void enableRawMode() {
   raw.c_cc[VTIME] = 1;
 
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
-    handleErrorAndQuit("enableRawMode: tcsetattr");
+    handleErrorAndQuit("termRawModeOn: tcsetattr");
 }
 
-void clearTerminal() {
+void termClear() {
   write(STDOUT_FILENO, ESC "[2J", 4);
 }
 
-void moveCursorToHome() {
+void termCursorHome(int x = -1) {
   write(STDOUT_FILENO, ESC "[H", 3);
+}
+
+void pushEscSeq(const char* command) {
+  
 }

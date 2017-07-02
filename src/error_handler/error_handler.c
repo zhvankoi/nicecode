@@ -2,8 +2,8 @@
 
 void handleErrorAndQuit(const char *msg)
 {
-  clearTerminal();
-  moveCursorToHome();
+  termClear();
+  termCursorHome();
 
   perror(msg);
   exit(1);
