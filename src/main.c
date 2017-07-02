@@ -10,22 +10,68 @@
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
+char editorRead() 
+{
+  int read_res = 0;
+  char input;
+  while(read_res != 1)
+  {
+    read_res = read(STDIN_FILENO, &input, 1);
+    /*
+     Cigwin returns -1 and sets errno to EAGAIN
+     if read timeout occures
+    */
+    if(read_res == -1 && errno != EAGAIN)
+    {
+      handleErrorAndQuit("editorRead: read");
+    }
+  }
+
+  return input;
+}
+
+void processKeypress()
+{
+  char input = editorRead();
+
+  switch(input) {
+    case CTRL_KEY('q'):
+      clearTerminal();
+      moveCursorToHome();
+      exit(0);
+      break;
+  }
+
+  if(!iscntrl(input)){
+    printf("%c\r\n", input);
+  }
+}
+
+void editorDrawRows(){
+  int i;
+  for (i = 0; i < 24; i++) {
+    write(STDOUT_FILENO, "~\r\n", 3);
+  }
+}
+
+void editorRefresh(){
+  clearTerminal();
+  moveCursorToHome();
+
+  editorDrawRows();
+
+  moveCursorToHome();
+}
+
 int main()
 {
   enableRawMode();
 
-  while (1) {
-    char c = '\0';
-    if (read(STDIN_FILENO, &c, 1) == -1 && errno != EAGAIN) 
-      handleErrorAndQuit("main: read failed");
-    if (iscntrl(c) && c != 0) {
-      printf("%d\r\n", c);
-    } else if(c != 0) {
-      printf("%d ('%c')\r\n", c, c);
-    }
-    if (c == 'q') break;
+  while (1) 
+  {
+    editorRefresh();
+    processKeypress();
   }
-
 
   return 0;
 }

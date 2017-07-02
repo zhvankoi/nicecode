@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "../terminal/termhelper.h"
+
 void handleErrorAndQuit(const char *msg);
 
 #endif

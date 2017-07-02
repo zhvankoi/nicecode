@@ -1,19 +1,23 @@
 #include "termhelper.h"
 
-struct termios orig_termios;
+struct EditorConfigs {
+  struct termios orig_termios;
+
+};
+
+struct EditorConfigs editor_configs;
 
 void disableRawMode() {
-  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1)
+  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &editor_configs.orig_termios) == -1)
     handleErrorAndQuit("disableRawMode: tcsetattr failed");
 }
 
-void enableRawMode()
-{
-  if (tcgetattr(STDIN_FILENO, &orig_termios) == -1)
+void enableRawMode() {
+  if (tcgetattr(STDIN_FILENO, &editor_configs.orig_termios) == -1)
     handleErrorAndQuit("enableRawMode: tcgetattr failed");
   atexit(disableRawMode);
 
-  struct termios raw = orig_termios;
+  struct termios raw = editor_configs.orig_termios;
 
   tcgetattr(STDIN_FILENO, &raw);
   raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
@@ -25,4 +29,12 @@ void enableRawMode()
 
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
     handleErrorAndQuit("enableRawMode: tcsetattr");
+}
+
+void clearTerminal() {
+  write(STDOUT_FILENO, ESC "[2J", 4);
+}
+
+void moveCursorToHome() {
+  write(STDOUT_FILENO, ESC "[H", 3);
 }
