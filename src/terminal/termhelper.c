@@ -1,17 +1,6 @@
-#include <ctype.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <termios.h>
-#include <unistd.h>
+#include "termhelper.h"
 
 struct termios orig_termios;
-
-void handleErrorAndQuit(const char *msg)
-{
-  perror(msg);
-  exit(1);
-}
 
 void disableRawMode() {
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1)
@@ -36,24 +25,4 @@ void enableRawMode()
 
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
     handleErrorAndQuit("enableRawMode: tcsetattr");
-}
-
-int main()
-{
-  enableRawMode();
-
-  while (1) {
-    char c = '\0';
-    if (read(STDIN_FILENO, &c, 1) == -1 && errno != EAGAIN) 
-      handleErrorAndQuit("main: read failed");
-    if (iscntrl(c)) {
-      printf("%d\r\n", c);
-    } else {
-      printf("%d ('%c')\r\n", c, c);
-    }
-    if (c == 'q') break;
-  }
-
-
-  return 0;
 }
