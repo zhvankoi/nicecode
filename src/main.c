@@ -10,8 +10,7 @@
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
-char editorRead() 
-{
+char editorRead() {
   int read_res = 0;
   char input;
   while(read_res != 1)
@@ -30,8 +29,7 @@ char editorRead()
   return input;
 }
 
-void processKeypress()
-{
+void processKeypress() {
   char input = editorRead();
 
   switch(input) {
@@ -43,7 +41,7 @@ void processKeypress()
   }
 
   if(!iscntrl(input)){
-    printf("%c\r\n", input);
+    //printf("%c\r\n", input);
   }
 }
 

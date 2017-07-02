@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/ioctl.h>
 
 #include "../error_handler/error_handler.h"
 
@@ -15,5 +16,6 @@ void termRawModeOn();
 void termRawModeOff();
 void termClear();
 void termCursorHome();
+int termGetSize(int* rows, int* cols);
 
 #endif

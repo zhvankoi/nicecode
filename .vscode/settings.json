@@ -3,6 +3,7 @@
     "stdio.h": "c",
     "stdlib.h": "c",
     "unistd.h": "c",
-    "termhelper.c": "cpp"
+    "termhelper.c": "cpp",
+    "stdio2.h": "c"
   }
 }
