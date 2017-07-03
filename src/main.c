@@ -10,7 +10,7 @@
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
-void processKeypress() {
+void editorMapKeypress() {
   char input = termRead();
 
   switch(input) {
@@ -30,34 +30,56 @@ void editorDrawRows(){
   int i;
 
   int rows, cols;
-  if (termGetSize(&rows, &cols) == -1)
-    handleErrorAndQuit("SIZE ERROR");
-  printf("WINDOW SIZE: %d x %d", rows, cols);
-  
-  
-  
-  for (i = 0; i < 24; i++) {
-    write(STDOUT_FILENO, "~\r\n", 3);
+  int res = termGetSize(&rows, &cols);
+  if(res != 0)
+    handleErrorAndQuit("editorDrawRows: termGetSize error");
+
+  write(STDOUT_FILENO, "+\r\n", 3);
+  for (i = 1; i < rows - 1; i++) {
+    write(STDOUT_FILENO, "-\r\n", 3);
   }
+
+  write(STDOUT_FILENO, "~", 1);
 }
 
 void editorRefresh(){
-  //termClear();
-  //termCursorHome();
+  termClear();
+  termCursorHome();
 
   editorDrawRows();
 
-  //termCursorHome();
+  termCursorHome();
 }
 
-int main()
+int main() {
+  char* buffer = NULL;
+  buffer = (char*) realloc(buffer, 10 * sizeof(char));
+
+  buffer[0] = 'a';
+  buffer[1] = 'b';
+  buffer[2] = 'c';
+  buffer[3] = 'd';
+  buffer[4] = 'e';
+  buffer[5] = 'f';
+  buffer[6] = 'g';
+  buffer[7] = 'h';
+  buffer[8] = 'g';
+  buffer[9] = '\0';
+
+  printf("%s\n", buffer);
+
+  free(buffer);
+  return 0;
+}
+
+int main_1()
 {
-  //termRawModeOn();
+  termRawModeOn();
 
   while (1) 
   {
     editorRefresh();
-    processKeypress();
+    editorMapKeypress();
   }
 
   return 0;
