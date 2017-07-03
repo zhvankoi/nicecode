@@ -1,13 +1,24 @@
-#ifndef _BUFFER_H_
-#define _BUFFER_H_
+#include "buffer.h"
 
-struct Buffer {
-  char* data;
-  int length;
+void bufferInit(struct Buffer* buffer)
+{
+  buffer->data = NULL;
+  buffer->length = 0;
 }
 
-void bufferInit(Buffer buffer);
-void bufferAppend(Buffer buffer, const char *bytes, int length);
-void bufferFree(Buffer buffer);
+void bufferAppend(struct Buffer* buffer, const char *bytes, int length)
+{
+  int new_length = buffer->length + length;
+  char* new_buffer = (char*) realloc(buffer->data, new_length);
+  memcpy(&new_buffer[buffer->length], bytes, length);
+  free(buffer->data);
 
-#endif
+  buffer->data = new_buffer;
+  buffer->length = new_length;
+}
+
+void bufferFree(struct Buffer* buffer)
+{
+  free(buffer->data);
+  buffer->length = 0;
+}

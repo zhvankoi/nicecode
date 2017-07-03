@@ -6,6 +6,12 @@ createdir:
 
 CFLAGS = -Wall -Wextra -pedantic -std=c99
 
+BUFFER = src/buffer/buffer.c
+BUFFER.OBJ = bin/buffer.o
+
+bin/buffer.o: $(BUFFER) src/terminal/termhelper.h 
+	$(CC) src/buffer/buffer.c -c -o $(BUFFER.OBJ) $(CFLAGS)
+
 TERMHELPER = src/terminal/termhelper.c
 TERMHELPER.OBJ = bin/termhelper.o
 
@@ -20,7 +26,7 @@ bin/errorhandler.o: $(ERORHANDLER) ./src/error_handler/error_handler.h
 
 MAIN = src/main.c
 
-bin/nicecode: bin/termhelper.o bin/errorhandler.o $(MAIN)
+bin/nicecode: bin/termhelper.o bin/errorhandler.o bin/buffer.o $(MAIN)
 	$(CC) $(MAIN) $(TERMHELPER.OBJ) $(ERORHANDLER.OBJ) -o bin/nicecode  $(CFLAGS)
 
 run: bin/nicecode
