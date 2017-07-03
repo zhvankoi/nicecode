@@ -10,27 +10,8 @@
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
-char editorRead() {
-  int read_res = 0;
-  char input;
-  while(read_res != 1)
-  {
-    read_res = read(STDIN_FILENO, &input, 1);
-    /*
-     Cigwin returns -1 and sets errno to EAGAIN
-     if read timeout occures
-    */
-    if(read_res == -1 && errno != EAGAIN)
-    {
-      handleErrorAndQuit("editorRead: read");
-    }
-  }
-
-  return input;
-}
-
 void processKeypress() {
-  char input = editorRead();
+  char input = termRead();
 
   switch(input) {
     case CTRL_KEY('q'):
@@ -47,23 +28,31 @@ void processKeypress() {
 
 void editorDrawRows(){
   int i;
+
+  int rows, cols;
+  if (termGetSize(&rows, &cols) == -1)
+    handleErrorAndQuit("SIZE ERROR");
+  printf("WINDOW SIZE: %d x %d", rows, cols);
+  
+  
+  
   for (i = 0; i < 24; i++) {
     write(STDOUT_FILENO, "~\r\n", 3);
   }
 }
 
 void editorRefresh(){
-  termClear();
-  termCursorHome();
+  //termClear();
+  //termCursorHome();
 
   editorDrawRows();
 
-  termCursorHome();
+  //termCursorHome();
 }
 
 int main()
 {
-  termRawModeOn();
+  //termRawModeOn();
 
   while (1) 
   {
