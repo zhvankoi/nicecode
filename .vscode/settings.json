@@ -3,10 +3,14 @@
     "stdio.h": "c",
     "stdlib.h": "c",
     "unistd.h": "c",
-    "termhelper.c": "cpp",
+    "termhelper.c": "c",
     "stdio2.h": "c",
-    "buffer.c": "cpp",
+    "buffer.c": "c",
     "buffer.h": "c",
-    "termhelper.h": "c"
+    "termhelper.h": "c",
+    "ioctl.h": "c",
+    "errno.h": "c",
+    "string.h": "c",
+    "termios.h": "c"
   }
 }

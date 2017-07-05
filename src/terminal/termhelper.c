@@ -109,7 +109,7 @@ int termGetSize(int *rows, int *cols) {
   int res = ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
   if(res == -1 || ws.ws_col == 0) {
     int written = pushEscSeq("999C") + pushEscSeq("999B");
-    if(written != 12)
+    if(written != 0)
       return -1;
 
     return termCursorPos(rows, cols);
