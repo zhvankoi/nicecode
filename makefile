@@ -1,33 +1,28 @@
-clean:
-	rm -rf bin/
-
-createdir:
-	mkdir bin/
-
 CFLAGS = -Wall -Wextra -pedantic -std=c99
 
+default: run
+
 BUFFER = src/buffer/buffer.c
-BUFFER.OBJ = bin/buffer.o
+bin/buffer.o: $(BUFFER) $(BUFFER:.c=.h)
+	$(CC) $(CFLAGS) -c $(BUFFER) -o bin/buffer.o
 
-bin/buffer.o: $(BUFFER) src/terminal/termhelper.h 
-	$(CC) src/buffer/buffer.c -c -o $(BUFFER.OBJ) $(CFLAGS)
+TERMINAL = src/terminal/termhelper.c
+bin/termhelper.o: $(TERMINAL) $(TERMINAL:.c=.h)
+	$(CC) $(CFLAGS) -c $(TERMINAL) -o bin/termhelper.o
 
-TERMHELPER = src/terminal/termhelper.c
-TERMHELPER.OBJ = bin/termhelper.o
+ERROR_HANDLER = src/error_handler/error_handler.c
+bin/error_handler.o: bin/termhelper.o $(ERROR_HANDLER) $(ERROR_HANDLER:.c=.h)
+	$(CC) $(CFLAGS) -c $(ERROR_HANDLER) -o bin/error_handler.o
 
-bin/termhelper.o: $(TERMHELPER) src/terminal/termhelper.h 
-	$(CC) src/terminal/termhelper.c -c -o $(TERMHELPER.OBJ) $(CFLAGS)
+OBJS = $(addprefix bin/,buffer.o termhelper.o error_handler.o)
+EXE = bin/nicecode
+$(EXE): $(OBJS) src/main.c
+	$(CC) $(CFLAGS) $(OBJS) src/main.c -o bin/nicecode
 
-ERORHANDLER = src/error_handler/error_handler.c
-ERORHANDLER.OBJ = bin/errorhandler.o
+.PHONY: clean
+clean:
+	rm -rf bin/
+	mkdir bin/
 
-bin/errorhandler.o: $(ERORHANDLER) ./src/error_handler/error_handler.h
-	$(CC) $(ERORHANDLER) -c -o $(ERORHANDLER.OBJ) $(CFLAGS)
-
-MAIN = src/main.c
-
-bin/nicecode: bin/termhelper.o bin/errorhandler.o bin/buffer.o $(MAIN)
-	$(CC) $(MAIN) $(TERMHELPER.OBJ) $(ERORHANDLER.OBJ) -o bin/nicecode  $(CFLAGS)
-
-run: bin/nicecode
+run: $(EXE)
 	./bin/nicecode

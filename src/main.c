@@ -7,76 +7,73 @@
 
 #include "./error_handler/error_handler.h"
 #include "./terminal/termhelper.h"
+#include "./buffer/buffer.h"
 
-#define CTRL_KEY(k) ((k) & 0x1f)
+#define CTRL_KEY(k) ((k)&0x1f)
 
-void editorMapKeypress() {
-  char input = termRead();
+void editorMapKeypress()
+{
+  char input;
+  int res = termRead(&input);
+  if (res != 0)
+    handleErrorAndQuit("editorMapKeyPress: termRead");
 
-  switch(input) {
-    case CTRL_KEY('q'):
-      termClear();
-      termCursorHome();
-      exit(0);
-      break;
+  switch (input)
+  {
+  case CTRL_KEY('q'):
+    //Clear and move cursor to home position.
+    write(STDOUT_FILENO, CLS_ESC_SEQ CUR_HOME_ESC_SEQ, 4 + 3);
+    exit(0);
+    break;
   }
 
-  if(!iscntrl(input)){
+  if (!iscntrl(input))
+  {
     //printf("%c\r\n", input);
   }
 }
 
-void editorDrawRows(){
+void editorDrawRows(struct Buffer *buffer)
+{
   int i;
-
   int rows, cols;
   int res = termGetSize(&rows, &cols);
-  if(res != 0)
+  if (res != 0)
     handleErrorAndQuit("editorDrawRows: termGetSize error");
 
-  write(STDOUT_FILENO, "+\r\n", 3);
-  for (i = 1; i < rows - 1; i++) {
-    write(STDOUT_FILENO, "-\r\n", 3);
+  for (i = 0; i < rows - 1; i++)
+  {
+    bufferAppend(buffer, "~\r\n", 3);
   }
 
-  write(STDOUT_FILENO, "~", 1);
+  bufferAppend(buffer, "~", 1);
 }
 
-void editorRefresh(){
-  termClear();
-  termCursorHome();
-
-  editorDrawRows();
-
-  termCursorHome();
-}
-
-int main() {
-  char* buffer = NULL;
-  buffer = (char*) realloc(buffer, 10 * sizeof(char));
-
-  buffer[0] = 'a';
-  buffer[1] = 'b';
-  buffer[2] = 'c';
-  buffer[3] = 'd';
-  buffer[4] = 'e';
-  buffer[5] = 'f';
-  buffer[6] = 'g';
-  buffer[7] = 'h';
-  buffer[8] = 'g';
-  buffer[9] = '\0';
-
-  printf("%s\n", buffer);
-
-  free(buffer);
-  return 0;
-}
-
-int main_1()
+void editorRefresh()
 {
-  termRawModeOn();
+  struct Buffer buffer;
+  bufferInit(&buffer);
+  bufferAppend(&buffer, "\x1b[?25l", 6);
+  bufferAppend(&buffer, CLS_ESC_SEQ, 4);
+  bufferAppend(&buffer, CUR_HOME_ESC_SEQ, 3);
 
-  while (1) 
+  editorDrawRows(&buffer);
+
+  bufferAppend(&buffer, CUR_HOME_ESC_SEQ, 3);
+  bufferAppend(&buffer, "\x1b[?25h", 6);
+
+  write(STDOUT_FILENO, buffer.data, buffer.length);
+  bufferFree(&buffer);
+}
+
+int main()
+{
+  int res = 0;
+  res = termRawModeOn();
+  if (res != 0)
+    handleErrorAndQuit("main: termRawModeOn");
+
+  while (1)
   {
     editorRefresh();
     editorMapKeypress();

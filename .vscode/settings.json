@@ -6,6 +6,7 @@
     "termhelper.c": "cpp",
     "stdio2.h": "c",
     "buffer.c": "cpp",
-    "buffer.h": "c"
+    "buffer.h": "c",
+    "termhelper.h": "c"
   }
 }

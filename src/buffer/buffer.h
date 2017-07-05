@@ -2,6 +2,11 @@
 #define _BUFFER_H_
 
 #include <stdlib.h>
+
+#include <stdio.h>
+#include <termios.h>
+#include <unistd.h>
+
 #include <string.h>
 
 struct Buffer {

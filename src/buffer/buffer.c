@@ -11,7 +11,6 @@ void bufferAppend(struct Buffer* buffer, const char *bytes, int length)
   int new_length = buffer->length + length;
   char* new_buffer = (char*) realloc(buffer->data, new_length);
   memcpy(&new_buffer[buffer->length], bytes, length);
-  free(buffer->data);
 
   buffer->data = new_buffer;
   buffer->length = new_length;

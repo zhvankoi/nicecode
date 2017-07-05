@@ -3,13 +3,12 @@
 struct termios orig_termios;
 
 void termRawModeOff() {
-  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1)
-    handleErrorAndQuit("termRawModeOff: tcsetattr failed");
+  tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
 }
 
-void termRawModeOn() {
+int termRawModeOn() {
   if (tcgetattr(STDIN_FILENO, &orig_termios) == -1)
-    handleErrorAndQuit("termRawModeOn: tcgetattr failed");
+    return -1;
   atexit(termRawModeOff);
 
   struct termios raw = orig_termios;
@@ -23,10 +22,12 @@ void termRawModeOn() {
   raw.c_cc[VTIME] = 1;
 
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
-    handleErrorAndQuit("termRawModeOn: tcsetattr");
+    return -1;
+
+  return 0;
 }
 
-char termRead() {
+int termRead(char* c) {
   int read_res = 0;
   char input;
   while(read_res != 1)
@@ -37,12 +38,11 @@ char termRead() {
      if read timeout occures
     */
     if(read_res == -1 && errno != EAGAIN)
-    {
-      handleErrorAndQuit("termRead: read");
-    }
+      return -1;
   }
 
-  return input;
+  *c = input;
+  return 0;
 }
 
 int pushEscSeq(const char* command) {
@@ -53,15 +53,20 @@ int pushEscSeq(const char* command) {
   bytes[2] = '\0';
   strcat(bytes, command);
 
-  return write(STDOUT_FILENO, bytes, length);
+  int res = write(STDOUT_FILENO, bytes, length);
+  if(res != length)
+    return -1;
+  
+  return 0;
 }
 
-void termClear() {
-  pushEscSeq("2J");
+int termClear() {
+  return pushEscSeq("2J");
+  //return 0;
 }
 
-void termCursorHome() {
-  pushEscSeq("H");
+int termCursorHome() {
+  return pushEscSeq("H");
 }
 
 int termCursorPos(int *rows, int *cols) {
@@ -71,8 +76,8 @@ int termCursorPos(int *rows, int *cols) {
     This escape sequence will return report
     in STDIN: <ESC>[22;22R (for example)
   */
-  int written = pushEscSeq("6n");
-  if(written != 4)
+  int res = pushEscSeq("6n");
+  if(res != 0)
     return -1;
 
   while(i < sizeof(pos_report) - 1) {

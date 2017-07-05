@@ -9,15 +9,17 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 
-#include "../error_handler/error_handler.h"
-
 #define ESC '\x1b'
 
-void termRawModeOn();
+#define CLS_ESC_SEQ "\x1b[2J"
+
+#define CUR_HOME_ESC_SEQ "\x1b[H"
+#define CUR_FORWARD_ESC_SEQ(x) "\x1b[" #x "C"
+#define CUR_DOWN_ESC_SEQ(x) "\xb[" #x "B"
+
+int termRawModeOn();
 void termRawModeOff();
-void termClear();
-void termCursorHome();
-char termRead();
-int termGetSize(int* rows, int* cols);
+int termRead(char *c);
+int termGetSize(int *rows, int *cols);
 
 #endif
