@@ -11,6 +11,18 @@
 
 #define ESC '\x1b'
 
+enum Keys
+{
+  ARROW_UP = 1000,
+  ARROW_RIGHT,
+  ARROW_DOWN,
+  ARROW_LEFT,
+  PAGE_UP,
+  PAGE_DOWN,
+  HOME_KEY,
+  END_KEY
+};
+
 //Erase In Display
 #define CLS_ESC_SEQ "\x1b[2J"
 //Erase In Line.
@@ -26,7 +38,7 @@
 
 int termRawModeOn();
 void termRawModeOff();
-int termRead(char *c);
+int termRead(int *c);
 int termGetSize(int *rows, int *cols);
 int termClear();
 int termCursorHome();
