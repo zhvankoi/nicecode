@@ -9,13 +9,14 @@
 
 #include <string.h>
 
-struct Buffer {
-  char* data;
+typedef struct
+{
+  char *data;
   int length;
-};
+} Buffer;
 
-void bufferInit(struct Buffer* buffer);
-void bufferAppend(struct Buffer* buffer, const char *bytes, int length);
-void bufferFree(struct Buffer* buffer);
+void bufferInit(Buffer *buffer);
+void bufferAppend(Buffer *buffer, const char *bytes, int length);
+void bufferFree(Buffer *buffer);
 
 #endif

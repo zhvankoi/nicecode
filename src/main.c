@@ -81,6 +81,11 @@ void editorMapKeypress()
   case ARROW_LEFT:
     editorMoveCursor(input);
     break;
+  case HOME_KEY:
+    context.cX = 0;
+    break;
+  case END_KEY:
+    context.cX = context.cols - 1;
   }
 
   //if (!iscntrl(input))
@@ -89,12 +94,8 @@ void editorMapKeypress()
   //}
 }
 
-void editorDrawRows(struct Buffer *buffer)
+void editorDrawRows(Buffer *buffer)
 {
-  int res = termGetSize(&context.rows, &context.cols);
-  if (res != 0)
-    handleErrorAndQuit("editorDrawRows: termGetSize error");
-
   int w_len = strlen(WELCOME_MSG);
 
   //if welcome message too long, trunctate it
@@ -125,7 +126,11 @@ void editorDrawRows(struct Buffer *buffer)
 
 void editorRefresh()
 {
-  struct Buffer buffer;
+  int res = termGetSize(&context.rows, &context.cols);
+  if (res != 0)
+    handleErrorAndQuit("editorRefresh: termGetSize error");
+
+  Buffer buffer;
   bufferInit(&buffer);
   bufferAppend(&buffer, CUR_HIDE_ESC_SEQ, strlen(CUR_HIDE_ESC_SEQ));
   bufferAppend(&buffer, CUR_HOME_ESC_SEQ, strlen(CUR_HOME_ESC_SEQ));

@@ -20,7 +20,8 @@ enum Keys
   PAGE_UP,
   PAGE_DOWN,
   HOME_KEY,
-  END_KEY
+  END_KEY,
+  DEL_KEY
 };
 
 //Erase In Display

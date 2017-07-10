@@ -29,6 +29,80 @@ int termRawModeOn()
   return 0;
 }
 
+int processEscSeq()
+{
+  char seq[3];
+  int read_res = read(STDIN_FILENO, seq, 1);
+  if (read_res != 1)
+    return ESC;
+
+  read_res = read(STDIN_FILENO, seq + 1, 1);
+  if (read_res != 1)
+    return seq[0];
+
+  switch (seq[0])
+  {
+  case '[':
+    if (seq[1] >= '0' && seq[1] <= '9')
+    {
+      read_res = read(STDIN_FILENO, seq + 2, 1);
+      if (read_res != 1)
+        return seq[1];
+
+      if (seq[2] == '~')
+      {
+        switch (seq[1])
+        {
+        case '1':
+          return HOME_KEY;
+        case '3':
+          return DEL_KEY;
+        case '4':
+          return END_KEY;
+        case '5':
+          return PAGE_UP;
+        case '6':
+          return PAGE_DOWN;
+        case '7':
+          return HOME_KEY;
+        case '8':
+          return END_KEY;
+        }
+      }
+    }
+    else
+    {
+      switch (seq[1])
+      {
+      case 'A':
+        return ARROW_UP;
+      case 'B':
+        return ARROW_DOWN;
+      case 'C':
+        return ARROW_RIGHT;
+      case 'D':
+        return ARROW_LEFT;
+      case 'H':
+        return HOME_KEY;
+      case 'F':
+        return END_KEY;
+      }
+    }
+    break;
+  case 'O':
+    switch (seq[1])
+    {
+    case 'H':
+      return HOME_KEY;
+    case 'F':
+      return END_KEY;
+    }
+    break;
+  }
+
+  return seq[0];
+}
+
 int termRead(int *c)
 {
   int read_res = 0;
@@ -46,71 +120,8 @@ int termRead(int *c)
 
   //Process escape sequences
   if (input == ESC)
-  {
-    char seq[3];
-    read_res = read(STDIN_FILENO, seq, 1);
-    if (read_res != 1)
-    {
-      *c = ESC;
-      return 0;
-    }
+    input = processEscSeq();
 
-    if (seq[0] != '[')
-    {
-      *c = seq[0];
-      return 0;
-    }
-
-    read_res = read(STDIN_FILENO, seq + 1, 1);
-    if (read_res != 1)
-    {
-      *c = seq[0];
-      return 0;
-    }
-
-    if (seq[1] == 'A')
-      input = ARROW_UP;
-    else if (seq[1] == 'B')
-      input = ARROW_DOWN;
-    else if (seq[1] == 'C')
-      input = ARROW_RIGHT;
-    else if (seq[1] == 'D')
-      input = ARROW_LEFT;
-    else if (seq[1] >= '0' && seq[1] <= '9')
-    {
-      read_res = read(STDIN_FILENO, &seq[2], 1);
-      if (read_res != 1)
-      {
-        *c = seq[1];
-        return 0;
-      }
-
-      if (seq[2] == '~')
-      {
-        switch (seq[1])
-        {
-        case '1':
-          *c = HOME_KEY;
-          return 0;
-        case '4':
-          *c = END_KEY;
-          return 0;
-        case '5':
-          *c = PAGE_UP;
-          return 0;
-        case '6':
-          *c = PAGE_DOWN;
-          return 0;
-        case '7':
-          *c = HOME_KEY;
-          return 0;
-        case '8':
-          *c = END_KEY;
-          return 0;
-        }
-      }
-    }
-  }
   *c = input;
   return 0;
 }
