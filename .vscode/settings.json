@@ -11,6 +11,7 @@
     "ioctl.h": "c",
     "errno.h": "c",
     "string.h": "c",
-    "termios.h": "c"
+    "termios.h": "c",
+    "corecrt_malloc.h": "c"
   }
 }

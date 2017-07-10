@@ -1,9 +1,14 @@
+#define _DEFAULT_SOURCE
+#define _BSD_SOURCE
+#define _GNU_SOURCE
+
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
+#include <sys/types.h>
 
 #include "./error_handler/error_handler.h"
 #include "./terminal/termhelper.h"
@@ -12,15 +17,34 @@
 #define CTRL_KEY(k) ((k)&0x1f)
 #define WELCOME_MSG "---==| NiCeCoDe EdItOr |==---\r\n"
 
+typedef struct
+{
+  int length;
+  char *content;
+} EditorLine;
+
 struct EditorContext
 {
   int cX;
   int cY;
   int rows;
   int cols;
+  int linesCount;
+  EditorLine *lines;
 };
 
 struct EditorContext context;
+
+void editorClose()
+{
+  termRawModeOff();
+  for (int i = 0; i < context.linesCount; ++i)
+  {
+    free(context.lines[i].content);
+  }
+
+  free(context.lines);
+}
 
 void editorInitialize()
 {
@@ -28,6 +52,53 @@ void editorInitialize()
   context.cY = 1;
   context.rows = 0;
   context.cols = 0;
+  context.linesCount = 0;
+  context.lines = NULL;
+
+  atexit(editorClose);
+}
+
+void editorAppendLine(char *line, size_t length)
+{
+  int new_lineCount = context.linesCount + 1;
+  context.lines = realloc(context.lines, sizeof(EditorLine) * new_lineCount);
+  EditorLine *newline_ref = &context.lines[context.linesCount];
+
+  newline_ref->content = malloc(length + 1);
+  memcpy(newline_ref->content, line, length);
+  newline_ref->content[length] = '\0';
+  newline_ref->length = length;
+
+  context.linesCount = new_lineCount;
+}
+
+void editorOpen(const char *filename)
+{
+  FILE *file = fopen(filename, "r");
+  if (!file)
+    handleErrorAndQuit("editorOpen: failed to open file");
+
+  char *line;
+  size_t line_capacity;
+  ssize_t line_length = 0;
+
+  while (line_length != -1) // identical to !feof(file)
+  {
+    line = NULL;
+    line_capacity = 0;
+    line_length = getline(&line, &line_capacity, file);
+    if (line_length != -1)
+    {
+      //this code works, but looks unsafe
+      while (line[line_length - 1] == '\n' || line[line_length - 1] == '\r')
+        line_length--;
+
+      editorAppendLine(line, line_length);
+    }
+
+    free(line);
+  }
+  fclose(file);
 }
 
 void editorMoveCursor(int key)
@@ -87,11 +158,6 @@ void editorMapKeypress()
   case END_KEY:
     context.cX = context.cols - 1;
   }
-
-  //if (!iscntrl(input))
-  //{
-  //printf("%d\r\n", input);
-  //}
 }
 
 void editorDrawRows(Buffer *buffer)
@@ -111,9 +177,18 @@ void editorDrawRows(Buffer *buffer)
   //bufferAppend(buffer, EL_ESC_SEQ, strlen(EL_ESC_SEQ));
   bufferAppend(buffer, WELCOME_MSG, w_len);
 
-  //draw tidles
   int i;
-  for (i = 1; i < context.rows - 1; i++)
+  //push text to screen
+  int rows_count = context.linesCount > context.rows ? context.rows : context.linesCount;
+  for (i = 0; i < rows_count; ++i)
+  {
+    bufferAppend(buffer, EL_ESC_SEQ, strlen(EL_ESC_SEQ));
+    bufferAppend(buffer, context.lines[i].content, context.lines[i].length);
+    bufferAppend(buffer, "\r\n", 2);
+  }
+
+  //draw tidles (+1 - including welcome msg)
+  for (i = rows_count + 1; i < context.rows - 1; ++i)
   {
     bufferAppend(buffer, EL_ESC_SEQ, strlen(EL_ESC_SEQ));
     bufferAppend(buffer, "~\r\n", 3);
@@ -147,9 +222,14 @@ void editorRefresh()
   bufferFree(&buffer);
 }
 
-int main()
+int main(int argc, char *args[])
 {
   editorInitialize();
+
+  if (argc >= 2)
+  {
+    editorOpen(args[1]);
+  }
 
   int res = 0;
   res = termRawModeOn();

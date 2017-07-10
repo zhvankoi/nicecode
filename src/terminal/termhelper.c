@@ -11,7 +11,6 @@ int termRawModeOn()
 {
   if (tcgetattr(STDIN_FILENO, &orig_termios) == -1)
     return -1;
-  atexit(termRawModeOff);
 
   struct termios raw = orig_termios;
 
