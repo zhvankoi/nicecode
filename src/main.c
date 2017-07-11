@@ -16,6 +16,7 @@
 
 #define CTRL_KEY(k) ((k)&0x1f)
 #define WELCOME_MSG "---==| NiCeCoDe EdItOr |==---\r\n"
+#define HEADER_OFFSET 1
 
 typedef struct
 {
@@ -30,6 +31,7 @@ struct EditorContext
   int rows;
   int cols;
   int linesCount;
+  int linesOffset;
   EditorLine *lines;
 };
 
@@ -49,10 +51,11 @@ void editorClose()
 void editorInitialize()
 {
   context.cX = 1;
-  context.cY = 1;
+  context.cY = 1 + HEADER_OFFSET;
   context.rows = 0;
   context.cols = 0;
   context.linesCount = 0;
+  context.linesOffset = 0;
   context.lines = NULL;
 
   atexit(editorClose);
@@ -106,7 +109,7 @@ void editorMoveCursor(int key)
   switch (key)
   {
   case ARROW_UP:
-    if (context.cY > 1)
+    if (context.cY > 1 + HEADER_OFFSET)
       context.cY--;
     break;
   case ARROW_RIGHT:
@@ -114,11 +117,12 @@ void editorMoveCursor(int key)
       context.cX++;
     break;
   case ARROW_DOWN:
-    if (context.cY < context.rows)
+    int editorMid = context.rows / 2;
+    if (context.linesCount + editorMid > context.cY)
       context.cY++;
     break;
   case ARROW_LEFT:
-    if (context.cX > 1)
+    if (context.cX > 2)
       context.cX--;
     break;
   }
@@ -174,29 +178,46 @@ void editorDrawRows(Buffer *buffer)
     bufferAppend(buffer, " ", 1);
 
   //first line is welcome
-  //bufferAppend(buffer, EL_ESC_SEQ, strlen(EL_ESC_SEQ));
+  bufferAppend(buffer, EL_ESC_SEQ, strlen(EL_ESC_SEQ));
   bufferAppend(buffer, WELCOME_MSG, w_len);
 
   int i;
   //push text to screen
-  int rows_count = context.linesCount > context.rows ? context.rows : context.linesCount;
-  for (i = 0; i < rows_count; ++i)
+  int lines_todraw = context.linesCount - context.linesOffset;
+  if (lines_todraw < 0)
+    lines_todraw = 0;
+  int rows_count = lines_todraw > context.rows ? context.rows : lines_todraw;
+  for (i = 0; i < rows_count - HEADER_OFFSET; ++i)
   {
+    int row_index = i + context.linesOffset;
     bufferAppend(buffer, EL_ESC_SEQ, strlen(EL_ESC_SEQ));
-    bufferAppend(buffer, context.lines[i].content, context.lines[i].length);
-    bufferAppend(buffer, "\r\n", 2);
+    bufferAppend(buffer, context.lines[row_index].content, context.lines[row_index].length);
+    //last line without \r\n
+    if (i != context.rows - HEADER_OFFSET - 1)
+      bufferAppend(buffer, "\r\n", 2);
   }
 
-  //draw tidles (+1 - including welcome msg)
-  for (i = rows_count + 1; i < context.rows - 1; ++i)
+  //draw tidles
+  for (; i < context.rows - HEADER_OFFSET; ++i)
   {
     bufferAppend(buffer, EL_ESC_SEQ, strlen(EL_ESC_SEQ));
-    bufferAppend(buffer, "~\r\n", 3);
+    bufferAppend(buffer, "~", 1);
+    //last tidle without \r\n
+    if (i != context.rows - HEADER_OFFSET - 1)
+      bufferAppend(buffer, "\r\n", 2);
   }
+}
 
-  //last tidle without \r\n
-  bufferAppend(buffer, EL_ESC_SEQ, strlen(EL_ESC_SEQ));
-  bufferAppend(buffer, "~", 1);
+void editorScroll()
+{
+  if (context.cY < context.linesOffset + 1 + HEADER_OFFSET)
+  {
+    context.linesOffset = context.cY - HEADER_OFFSET - 1;
+  }
+  else if (context.cY >= context.linesOffset + context.rows)
+  {
+    context.linesOffset = context.cY - context.rows;
+  }
 }
 
 void editorRefresh()
@@ -204,6 +225,8 @@ void editorRefresh()
   int res = termGetSize(&context.rows, &context.cols);
   if (res != 0)
     handleErrorAndQuit("editorRefresh: termGetSize error");
+
+  editorScroll();
 
   Buffer buffer;
   bufferInit(&buffer);
@@ -213,7 +236,7 @@ void editorRefresh()
   editorDrawRows(&buffer);
 
   char buff[36];
-  snprintf(buff, sizeof(buff), "\x1b[%d;%dH", context.cY, context.cX);
+  snprintf(buff, sizeof(buff), "\x1b[%d;%dH", context.cY - context.linesOffset, context.cX);
 
   bufferAppend(&buffer, buff, strlen(buff));
   bufferAppend(&buffer, CUR_SHOW_ESC_SEQ, strlen(CUR_SHOW_ESC_SEQ));
