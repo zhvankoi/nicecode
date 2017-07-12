@@ -106,6 +106,7 @@ void editorOpen(const char *filename)
 
 void editorMoveCursor(int key)
 {
+  int editorMid = context.rows / 2;
   switch (key)
   {
   case ARROW_UP:
@@ -117,7 +118,6 @@ void editorMoveCursor(int key)
       context.cX++;
     break;
   case ARROW_DOWN:
-    int editorMid = context.rows / 2;
     if (context.linesCount + editorMid > context.cY)
       context.cY++;
     break;
