@@ -37,6 +37,18 @@ struct EditorContext
 
 struct EditorContext context;
 
+FILE *logfile = NULL;
+
+void LOG(const char *msg)
+{
+  if (logfile == NULL)
+  {
+    logfile = fopen("dump.txt", "w");
+  }
+
+  fprintf(logfile, "%s\n", msg);
+}
+
 void editorClose()
 {
   termRawModeOff();
@@ -46,6 +58,8 @@ void editorClose()
   }
 
   free(context.lines);
+  if (logfile != NULL)
+    fclose(logfile);
 }
 
 void editorInitialize()
@@ -92,6 +106,8 @@ void editorOpen(const char *filename)
     line_length = getline(&line, &line_capacity, file);
     if (line_length != -1)
     {
+      LOG(line);
+
       //this code works, but looks unsafe
       while (line[line_length - 1] == '\n' || line[line_length - 1] == '\r')
         line_length--;
