@@ -109,10 +109,10 @@ int termRead(int *c)
   while (read_res != 1)
   {
     read_res = read(STDIN_FILENO, &input, 1);
-    /*
-     Cigwin returns -1 and sets errno to EAGAIN
-     if read timeout occures
-    */
+    /**
+     * Cigwin returns -1 and sets errno to EAGAIN
+     * if read timeout occures
+     */
     if (read_res == -1 && errno != EAGAIN)
       return -1;
   }

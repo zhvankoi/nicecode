@@ -1,0 +1,4 @@
+[28.08.2017 14:20:13] INFO: Editor initialized
+[28.08.2017 14:20:13] INFO: Raw mode status: ON
+[28.08.2017 14:20:13] INFO: Starting editor lifecycle
+[28.08.2017 14:20:13] ERROR: Big big big error!!! . Errno: 12

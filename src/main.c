@@ -13,6 +13,7 @@
 #include "./error_handler/error_handler.h"
 #include "./terminal/termhelper.h"
 #include "./buffer/buffer.h"
+#include "./logger/logger.h"
 
 #define CTRL_KEY(k) ((k)&0x1f)
 #define WELCOME_MSG "---==| NiCeCoDe EdItOr |==---\r\n"
@@ -43,7 +44,7 @@ void LOG(const char *msg)
 {
   if (logfile == NULL)
   {
-    logfile = fopen("dump.txt", "w");
+    logfile = fopen("log.txt", "w");
   }
 
   fprintf(logfile, "%s\n", msg);
@@ -264,10 +265,12 @@ void editorRefresh()
 int main(int argc, char *args[])
 {
   editorInitialize();
+  logInfo("Editor initialized");
 
   if (argc >= 2)
   {
     editorOpen(args[1]);
+    logInfo("Successfully opened file");
   }
 
   int res = 0;
@@ -275,11 +278,15 @@ int main(int argc, char *args[])
   if (res != 0)
     handleErrorAndQuit("main: termRawModeOn");
 
+  logInfo("Raw mode status: ON");
+  logInfo("Starting editor lifecycle");
+  handleError("Big big big error!!! ");
   while (1)
   {
     editorRefresh();
     editorMapKeypress();
   }
 
+  logInfo("Ending editor lifecycle");
   return 0;
 }

@@ -24,9 +24,9 @@ enum Keys
   DEL_KEY
 };
 
-//Erase In Display
+//Erase In Display.
 #define CLS_ESC_SEQ "\x1b[2J"
-//Erase In Line.
+//Erase In Line
 //http://vt100.net/docs/vt100-ug/chapter3.html#EL
 #define EL_ESC_SEQ "\x1b[K"
 

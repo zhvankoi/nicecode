@@ -5,7 +5,9 @@
 #include <stdlib.h>
 
 #include "../terminal/termhelper.h"
+#include "../logger/logger.h"
 
+void handleError(const char *msg);
 void handleErrorAndQuit(const char *msg);
 
 #endif
